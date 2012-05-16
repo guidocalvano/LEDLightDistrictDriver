@@ -1,4 +1,4 @@
-to set an rgb led on the string:
+to set an rgb led on the string send the following bytes over serial port to the arduino:
 
 irgb
 
