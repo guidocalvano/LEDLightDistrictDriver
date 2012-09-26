@@ -4,8 +4,8 @@
 int SDI = 2; //Yellow wire (not the red 5V wire!)
 int CKI = 4; //Green wire
 
-#define SCREEN_WIDTH 8
-#define SCREEN_HEIGHT 5
+#define SCREEN_WIDTH 12
+#define SCREEN_HEIGHT 10
 #define STRIP_LENGTH SCREEN_WIDTH * SCREEN_HEIGHT
 
 #define REQUEST_RATE 5000 // milliseconds
@@ -15,11 +15,13 @@ byte colorSequence[ STRIP_LENGTH * 3 ] ;
 
 int receivedMessageCount = 0 ;
 
+int nextEmptyBufferTime ; 
 
 void setup () {
   Serial.begin(115200);
-   
-
+  
+  while( Serial.available() ) Serial.read() ; 
+  end_frame() ;
    
   pinMode(SDI, OUTPUT);
   pinMode(CKI, OUTPUT);
@@ -31,16 +33,50 @@ void setup () {
        colorSequence[  3 * i + 1 ] = 0  ;
        colorSequence[  3 * i + 2 ] = 0  ;
       }
-      
-      
+  /*
+   colorSequence[ 0 ] = 0 ; 
+   colorSequence[ 1 ] = 0  ;
+   colorSequence[ 2 ] = 255  ; // indicates the arduino is in intialization   
+     */ 
    for( int i = 0 ; i < STRIP_LENGTH ; i++ )
     send_colour( colorSequence[  3 * i ], colorSequence[  3 * i + 1 ], colorSequence[  3 * i + 2 ] ) ; 
-  end_frame() ;
+
+  end_frame() ;    
+  nextEmptyBufferTime = millis() + 2000 ;
+
 }
 
 
 void loop () 
   {
+
+   /*      
+   if( millis() > nextEmptyBufferTime ) 
+     {  
+      while( Serial.available() ) Serial.read() ;
+      end_frame() ;      
+       colorSequence[ 0 ] = 0 ;
+       colorSequence[ 1 ] = 255 ;
+       colorSequence[ 2 ] = 0 ; 
+
+      updateScreen() ;
+      
+      nextEmptyBufferTime = millis() + 2000 ;
+      
+     }
+   else
+     {
+      colorSequence[ 0 ] = 255 ;
+      colorSequence[ 1 ] = 0 ;
+      colorSequence[ 2 ] = 0 ; 
+  
+      updateScreen() ;     
+     }
+   */
+   
+   // if( Serial.available() == 0 ) 
+   //   nextEmptyBufferTime = millis() + 2000 ;
+      
    readSerial() ;
   }
 
@@ -49,14 +85,14 @@ void readSerial()
   {
      if( Serial.available() )
     {
-
-         colorSequence[ 0 ] = 0 ;
-          colorSequence[ 1 ] = 255 ;
-          colorSequence[ 2 ] = 0 ; 
-     
+/*
+         colorSequence[ 0 ] = 255 ;
+          colorSequence[ 1 ] = 0 ;
+          colorSequence[ 2 ] = 255 ; 
+  */   
      int c = Serial.available() ;
 
-
+/*
      if( c & 1 ) 
         colorSequence[ 3 ] = 50 ;     
         
@@ -65,6 +101,7 @@ void readSerial()
 
      if( c & 4 ) 
         colorSequence[ 5 ] = 50 ;
+        */
     } 
   
   if( Serial.available() >= 4 )
@@ -73,6 +110,11 @@ void readSerial()
       {
        readPutpixelFromSerial() ;
       }
+     /* 
+     colorSequence[ 0 ] = 255 ;
+      colorSequence[ 1 ] = 0 ;
+      colorSequence[ 2 ] = 0 ;   
+     */ 
     updateScreen() ;
    } 
   }
@@ -84,23 +126,24 @@ int readPutpixelFromSerial()
    byte r = Serial.read() ;
    byte g = Serial.read() ;
    byte b = Serial.read() ;
-       
+   
+   nextEmptyBufferTime = millis() + 2000 ;
+ /*      
    if( i > 39 || i < 0 )
      {
       colorSequence[ 0 ] = 0 ;
       colorSequence[ 1 ] = 0 ;
       colorSequence[ 2 ] = 255 ;          
       return -1 ; 
-     }
+     }*/
    
    
-   if( i != 0 )
-     {
+   
        
       colorSequence[  3 * i ] = r ; 
       colorSequence[  3 * i + 1 ] = g  ;
       colorSequence[  3 * i + 2 ] = b  ;
-     }
+     
      
    receivedMessageCount++ ;
    
@@ -131,8 +174,8 @@ void updateScreen()
         }
        
        // start of benchmark code
-       for( int i = 0 ;  i < 256 ; i++ )
-                send_colour( 0, 10, 0 ) ;         
+       // for( int i = 0 ;  i < 256 ; i++ )
+       //         send_colour( 0, 0, 10 ) ;         
        // end of benchmark code 
         
        end_frame() ; 
