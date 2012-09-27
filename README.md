@@ -11,3 +11,9 @@ byte b := blue
 
 
 Every 11 messages the arduino writes back an 'a' character.
+
+
+For communicating with the LED strip:
+
+Pin 2 is the data pin.
+Pin 4 is the clock pin.
